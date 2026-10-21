@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: imagengerald
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: imagengerald
+  template:
+    metadata:
+      labels:
+        app: imagengerald
+    spec:
+      containers:
+        - name: imagengerald
+          image: IMAGE_URI_PLACEHOLDER
+          ports:
+            - containerPort: 8080

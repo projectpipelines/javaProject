@@ -67,8 +67,8 @@ jobs:
       if: steps.check_dir.outputs.any_changed == 'false'
       run: |
         docker tag imagengerald:${{ env.TAG }} $FULL_IMAGE_NAME:${{ env.TAG }}
-        docker push $FULL_IMAGE_NAME:${{ env.TAG }}
         docker tag imagengerald:latest $FULL_IMAGE_NAME:latest
+        docker push $FULL_IMAGE_NAME:${{ env.TAG }}
         docker push $FULL_IMAGE_NAME:latest
       
     - name: Correr imagen Docker

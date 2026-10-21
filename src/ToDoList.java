@@ -34,7 +34,7 @@ public class ToDoList {
                 case 2 -> viewTasks();
                 case 3 -> markTaskCompleted();
                 case 4 -> deleteTask();
-                case 5 -> System.out.println("Tola Larga!");
+                case 5 -> System.out.println("Mema");
                 default -> System.out.println("Invalid option. Try again.");
             }
         } while (choice != 5);

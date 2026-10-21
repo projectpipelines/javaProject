@@ -77,48 +77,7 @@ jobs:
         docker pull $IMAGE_URI
         docker run --rm $IMAGE_URI
       continue-on-error: true
-      
-    - name: Aqua Security Trivy
-      uses: aquasecurity/trivy-action@v0.36.0
-      with: 
-        image-ref: 'docker.io/library/imagengerald:${{ env.TAG }}'
-        format: 'json'
-        output: 'trivy-results.json'
-        severity: 'CRITICAL,HIGH,MEDIUM'
-      
-    - name: Generate Github Summary
-      if: always() # Asegura que se ejecute aunque Trivy encuentre vulnerabilidades
-      run: |
-          # Instalar jq para procesar el JSON si no está disponible
-          sudo apt-get install -y jq
-
-          # Leer totales usando jq (asumiendo formato estándar de Trivy)
-          CRITICAL=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' trivy-results.json)
-          HIGH=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="HIGH")] | length' trivy-results.json)
-          MEDIUM=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="MEDIUM")] | length' trivy-results.json)
-
-          # Crear el diseño del Summary en Markdown
-          echo "## 🛡️ Reporte de Seguridad - Trivy" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Resumen de vulnerabilidades encontradas en el escaneo:" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          # Tabla de resumen
-          echo "| Gravedad | Total | Estado |" >> $GITHUB_STEP_SUMMARY
-          echo "| --- | --- | --- |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔴 Crítica | $CRITICAL | $( [ $CRITICAL -gt 0 ] && echo "❌ Acción Requerida" || echo "✅ Limpio" ) |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🟠 Alta | $HIGH | $( [ $HIGH -gt 0 ] && echo "⚠️ Revisar" || echo "✅ Limpio" ) |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🟡 Media | $MEDIUM | 👀 Informativo |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Detalle de las vulnerabilidades Críticas (Top 5 de muestra)
-          if [ $CRITICAL -gt 0 ]; then
-            echo "### 🚨 Vulnerabilidades Críticas Detectadas:" >> $GITHUB_STEP_SUMMARY
-            echo "| ID | Paquete | Versión Instalada | Versión Fija |" >> $GITHUB_STEP_SUMMARY
-            echo "| --- | --- | --- | --- |" >> $GITHUB_STEP_SUMMARY
-            jq -r '.Results[].Vulnerabilities[]? | select(.Severity=="CRITICAL") | "| \(.VulnerabilityID) | \(.PkgName) | \(.InstalledVersion) | \(.FixedVersion // "N/A") |"' trivy-results.json | head -n 5 >> $GITHUB_STEP_SUMMARY
-          fi
-
+   
   deploy:
   
     runs-on: ubuntu-latest

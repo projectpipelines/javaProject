@@ -104,7 +104,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Tabla de resumen
-          echo "| Severidad | Total | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "| Gravedad | Total | Estado |" >> $GITHUB_STEP_SUMMARY
           echo "| --- | --- | --- |" >> $GITHUB_STEP_SUMMARY
           echo "| 🔴 Crítica | $CRITICAL | $( [ $CRITICAL -gt 0 ] && echo "❌ Acción Requerida" || echo "✅ Limpio" ) |" >> $GITHUB_STEP_SUMMARY
           echo "| 🟠 Alta | $HIGH | $( [ $HIGH -gt 0 ] && echo "⚠️ Revisar" || echo "✅ Limpio" ) |" >> $GITHUB_STEP_SUMMARY

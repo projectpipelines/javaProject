@@ -52,9 +52,7 @@ jobs:
         
     - name: Build the Docker image
       if: steps.check_dir.outputs.any_changed == 'false'
-      run: docker build . --file Dockerfile \
-        --tag imagengerald:${{ env.TAG }} \
-        --tag imagengerald:latest
+      run: docker build . --file Dockerfile --tag imagengerald:latest
 
     - name: Crear variable con la imagen
       if: steps.check_dir.outputs.any_changed == 'false'

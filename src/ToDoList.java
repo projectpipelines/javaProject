@@ -46,7 +46,8 @@ public class ToDoList {
         System.out.println("2. View All Tasks");
         System.out.println("3. Mark Task as Completed");
         System.out.println("4. Delete a Task");
-        System.out.println("5. Exit");
+        System.out.println("5. Exito");
+        System.out.println("6. Anda a laar");
     }
 
     private static void addTask() {

@@ -119,11 +119,59 @@ jobs:
             jq -r '.Results[].Vulnerabilities[]? | select(.Severity=="CRITICAL") | "| \(.VulnerabilityID) | \(.PkgName) | \(.InstalledVersion) | \(.FixedVersion // "N/A") |"' trivy-results.json | head -n 5 >> $GITHUB_STEP_SUMMARY
           fi
 
-  security:
+  deploy:
   
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Aqua Security Trivy
         run: echo 'Hola Mundo'
-    
+
+      - name: Funcion para autenticarse en GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          
+      - name: Obtener credenciales de GKE
+        if: github.event_name == 'push'
+        uses: google-github-actions/get-gke-credentials@v3
+        with:
+          cluster_name: ${{ vars.GKE_CLUSTER }}
+          location: ${{ vars.GKE_CLUSTER_ZONE }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+  
+      - name: Desplegar aplicación en GKE
+        if: github.event_name == 'push' && success()
+        shell: bash
+        run: |
+          set -euo pipefail
+  
+          # Si solo cambió el pipeline, reutilizar la última imagen.
+          if [[ "${{ steps.check_dir.outputs.any_changed }}" == "true" ]]; then
+            TAG_TO_DEPLOY="latest"
+          else
+            TAG_TO_DEPLOY="${{ env.TAG }}"
+          fi
+          
+          IMAGE_URI="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${TAG_TO_DEPLOY}"
+  
+          echo "Imagen que se desplegará: $IMAGE_URI"
+  
+          # Aplicar el Deployment con la imagen seleccionada.
+          sed "s|IMAGE_URI_PLACEHOLDER|${IMAGE_URI}|g" \
+            k8s/deployment.yaml | kubectl apply -f -
+  
+          # Crear o actualizar el Service.
+          kubectl apply -f k8s/service.yaml
+  
+          # Esperar a que Kubernetes complete el despliegue.
+          kubectl rollout status deployment/imagengerald \
+            --timeout=180s
+  
+          # Mostrar el estado del Deployment y el Service.
+          kubectl get pods -l app=imagengerald
+          kubectl get service imagengerald-service
+  
+          
+      
